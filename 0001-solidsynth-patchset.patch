@@ -1,5 +1,5 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d0293363..24355e41 100644
+index 93000f71..3d2a7665 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -73,7 +73,7 @@ option ( BUILD_SHARED_LIBS "Build a shared object or DLL" on )
@@ -20,7 +20,7 @@ index d0293363..24355e41 100644
  option ( enable-pulseaudio "compile PulseAudio support (if it is available)" on )
  option ( enable-readline "compile readline lib line editing (if it is available)" on )
  option ( enable-threads "enable multi-threading support (such as parallel voice synthesis)" on )
-@@ -130,7 +130,7 @@ mark_as_advanced ( LIB_SUFFIX )
+@@ -131,7 +131,7 @@ mark_as_advanced ( LIB_SUFFIX )
  set(CMAKE_C_STANDARD 90)
  
  # the default C++ standard to use for all targets
@@ -29,7 +29,7 @@ index d0293363..24355e41 100644
  
  # whether to use gnu extensions
  set(CMAKE_CXX_EXTENSIONS OFF)
-@@ -183,6 +183,7 @@ check_include_file ( pthread.h HAVE_PTHREAD_H )
+@@ -184,6 +184,7 @@ check_include_file ( pthread.h HAVE_PTHREAD_H )
  check_include_file ( signal.h HAVE_SIGNAL_H )
  check_include_file ( getopt.h HAVE_GETOPT_H )
  check_include_file ( stdint.h HAVE_STDINT_H )
@@ -37,7 +37,7 @@ index d0293363..24355e41 100644
  check_type_size ( "long long" LONG_LONG )
  if ( NOT HAVE_LONG_LONG AND NOT MSVC)
      message ( FATAL_ERROR "Your compiler does not support intrinsic type 'long long'. Unable to compile fluidsynth." )
-@@ -487,37 +488,9 @@ if ( ASTYLE )
+@@ -492,38 +493,9 @@ if ( ASTYLE )
      )
  endif(ASTYLE)
  
@@ -68,6 +68,7 @@ index d0293363..24355e41 100644
 -
 -    # Mandatory libraries: glib and gthread
 -    pkg_check_modules ( GLIB REQUIRED glib-2.0>=2.6.5 gthread-2.0>=2.6.5 )
+-    list( APPEND PC_REQUIRES_PRIV "glib-2.0" "gthread-2.0")
 -
 -    if ( GLIB_glib-2.0_VERSION AND GLIB_glib-2.0_VERSION VERSION_LESS "2.26.0" )
 -        message ( WARNING "Your version of glib is very old. This may cause problems with fluidsynth's sample cache on Windows. Consider updating to glib 2.26 or newer!" )
@@ -76,7 +77,16 @@ index d0293363..24355e41 100644
      include ( UnsetPkgConfig )
  
      # Optional features
-@@ -781,7 +754,6 @@ configure_file ( ${CMAKE_SOURCE_DIR}/src/config.cmake
+@@ -687,7 +659,7 @@ else(NOT enable-pkgconfig)
+     endif ( READLINE_FOUND )
+     endif ( enable-readline )
+ 
+-endif(NOT enable-pkgconfig)
++endif(enable-pkgconfig)
+ 
+ unset ( AUFILE_SUPPORT CACHE )
+ if ( enable-aufile )
+@@ -827,7 +799,6 @@ configure_file ( ${CMAKE_SOURCE_DIR}/src/config.cmake
  
  # Setup linker directories NOW, as the command will apply only to targets created after it has been called.
  link_directories (
@@ -85,7 +95,7 @@ index d0293363..24355e41 100644
      ${JACK_LIBRARY_DIRS}
      ${ALSA_LIBRARY_DIRS}
 diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
-index e913cb21..053ac962 100644
+index 2803ca88..804d18de 100644
 --- a/src/CMakeLists.txt
 +++ b/src/CMakeLists.txt
 @@ -35,7 +35,6 @@ include_directories (
@@ -138,7 +148,7 @@ index 1d4baaed..9295b77d 100644
  
  /**
 diff --git a/src/config.cmake b/src/config.cmake
-index 946421b6..bdbd3fd5 100644
+index d3aaf701..ba6e6b3d 100644
 --- a/src/config.cmake
 +++ b/src/config.cmake
 @@ -124,6 +124,9 @@
@@ -152,10 +162,10 @@ index 946421b6..bdbd3fd5 100644
  #cmakedefine HAVE_INETNTOP @HAVE_INETNTOP@
  
 diff --git a/src/drivers/fluid_oss.c b/src/drivers/fluid_oss.c
-index 0cd359d5..dc6a7317 100644
+index 9f27735d..ed82d8fc 100644
 --- a/src/drivers/fluid_oss.c
 +++ b/src/drivers/fluid_oss.c
-@@ -540,7 +540,7 @@ fluid_oss_audio_run(void *d)
+@@ -562,7 +562,7 @@ fluid_oss_audio_run(void *d)
          if(write(dev->dspfd, buffer, dev->buffer_byte_size) < 0)
          {
              FLUID_LOG(FLUID_ERR, "Error writing to OSS sound device: %s",
@@ -164,7 +174,7 @@ index 0cd359d5..dc6a7317 100644
              break;
          }
      }
-@@ -580,7 +580,7 @@ fluid_oss_audio_run2(void *d)
+@@ -602,7 +602,7 @@ fluid_oss_audio_run2(void *d)
          if(write(dev->dspfd, buffer, dev->buffer_byte_size) < 0)
          {
              FLUID_LOG(FLUID_ERR, "Error writing to OSS sound device: %s",
@@ -187,10 +197,10 @@ index f7a74dea..d30c2994 100644
  
          FLUID_FREE(media_role);       /* -- free media_role string */
 diff --git a/src/fluidsynth.c b/src/fluidsynth.c
-index 6c1132f4..997626fb 100644
+index 55d1000f..28a1850f 100644
 --- a/src/fluidsynth.c
 +++ b/src/fluidsynth.c
-@@ -855,12 +855,6 @@ int main(int argc, char **argv)
+@@ -894,12 +894,6 @@ int main(int argc, char **argv)
          {
              config_file = fluid_get_sysconf(buf, sizeof(buf));
          }
@@ -204,10 +214,10 @@ index 6c1132f4..997626fb 100644
  
      /* Handle set commands before creating the synth */
 diff --git a/src/midi/fluid_midi.c b/src/midi/fluid_midi.c
-index 113c1595..7194c0cf 100644
+index cab651b8..2ef0d709 100644
 --- a/src/midi/fluid_midi.c
 +++ b/src/midi/fluid_midi.c
-@@ -2163,7 +2163,8 @@ fluid_player_callback(void *data, unsigned int msec)
+@@ -2191,7 +2191,8 @@ fluid_player_callback(void *data, unsigned int msec)
      while(loadnextfile);
  
      /* do not update the status if the player has been stopped already */
@@ -217,7 +227,7 @@ index 113c1595..7194c0cf 100644
  
      return 1;
  }
-@@ -2245,7 +2246,8 @@ int fluid_player_seek(fluid_player_t *player, int ticks)
+@@ -2283,7 +2284,8 @@ int fluid_player_seek(fluid_player_t *player, int ticks)
  
      if(fluid_player_get_status(player) == FLUID_PLAYER_PLAYING)
      {
@@ -228,7 +238,7 @@ index 113c1595..7194c0cf 100644
              // new seek position has been set, as no previous seek was in progress
              return FLUID_OK;
 diff --git a/src/synth/fluid_synth.c b/src/synth/fluid_synth.c
-index fc0d35fc..f754c1bc 100644
+index b6a8c3ee..81273b06 100644
 --- a/src/synth/fluid_synth.c
 +++ b/src/synth/fluid_synth.c
 @@ -631,7 +631,8 @@ new_fluid_synth(fluid_settings_t *settings)
@@ -243,7 +253,7 @@ index fc0d35fc..f754c1bc 100644
      }
 diff --git a/src/utils/fluid_atomics.c b/src/utils/fluid_atomics.c
 new file mode 100644
-index 00000000..6bb28c25
+index 00000000..7532e45e
 --- /dev/null
 +++ b/src/utils/fluid_atomics.c
 @@ -0,0 +1,303 @@
@@ -552,7 +562,7 @@ index 00000000..6bb28c25
 +#endif
 diff --git a/src/utils/fluid_atomics.h b/src/utils/fluid_atomics.h
 new file mode 100644
-index 00000000..bbcd7b5a
+index 00000000..f7d6aef0
 --- /dev/null
 +++ b/src/utils/fluid_atomics.h
 @@ -0,0 +1,213 @@
@@ -953,7 +963,7 @@ index e3c0ea4d..e3d0bd3b 100644
          if(errMsg != NULL)
          {
 diff --git a/src/utils/fluid_sys.h b/src/utils/fluid_sys.h
-index 86a47f32..ce12dc0f 100644
+index 635bcf6d..f65e2407 100644
 --- a/src/utils/fluid_sys.h
 +++ b/src/utils/fluid_sys.h
 @@ -115,20 +115,20 @@
@@ -1022,7 +1032,7 @@ index 86a47f32..ce12dc0f 100644
  
  #if FLUID_IS_BIG_ENDIAN
  #define FLUID_FOURCC(_a, _b, _c, _d) \
-@@ -238,42 +245,36 @@ int fluid_timer_stop(fluid_timer_t *timer);
+@@ -241,42 +248,36 @@ int fluid_timer_stop(fluid_timer_t *timer);
  int fluid_timer_is_running(const fluid_timer_t *timer);
  long fluid_timer_get_interval(const fluid_timer_t * timer);
  
@@ -1081,7 +1091,7 @@ index 86a47f32..ce12dc0f 100644
      return (mutex);
  }
  
-@@ -281,22 +282,22 @@ static FLUID_INLINE void
+@@ -284,22 +285,22 @@ static FLUID_INLINE void
  delete_fluid_cond_mutex(fluid_cond_mutex_t *m)
  {
      fluid_return_if_fail(m != NULL);
@@ -1113,7 +1123,7 @@ index 86a47f32..ce12dc0f 100644
      return (cond);
  }
  
-@@ -304,109 +305,36 @@ static FLUID_INLINE void
+@@ -307,109 +308,36 @@ static FLUID_INLINE void
  delete_fluid_cond(fluid_cond_t *cond)
  {
      fluid_return_if_fail(cond != NULL);
@@ -1238,7 +1248,7 @@ index 86a47f32..ce12dc0f 100644
  
  static FLUID_INLINE void
  fluid_atomic_float_set(fluid_atomic_float_t *fptr, float val)
-@@ -434,12 +362,12 @@ typedef void *fluid_thread_return_t;
+@@ -437,12 +365,12 @@ typedef void *fluid_thread_return_t;
  /* static return value for thread functions which requires a return value */
  #define FLUID_THREAD_RETURN_VALUE (NULL)
  
@@ -1254,7 +1264,7 @@ index 86a47f32..ce12dc0f 100644
  
  fluid_thread_t *new_fluid_thread(const char *name, fluid_thread_func_t func, void *data,
                                   int prio_level, int detach);
-@@ -484,23 +412,16 @@ fluid_istream_t fluid_socket_get_istream(fluid_socket_t sock);
+@@ -487,23 +415,16 @@ fluid_istream_t fluid_socket_get_istream(fluid_socket_t sock);
  fluid_ostream_t fluid_socket_get_ostream(fluid_socket_t sock);
  
  /* File access */
@@ -1289,7 +1299,7 @@ index 86a47f32..ce12dc0f 100644
  FILE* fluid_file_open(const char* filename, const char** errMsg);
 diff --git a/src/utils/fluid_threading.cpp b/src/utils/fluid_threading.cpp
 new file mode 100644
-index 00000000..4e9bf89a
+index 00000000..82104de9
 --- /dev/null
 +++ b/src/utils/fluid_threading.cpp
 @@ -0,0 +1,157 @@
@@ -1452,7 +1462,7 @@ index 00000000..4e9bf89a
 +}
 diff --git a/src/utils/fluid_threading.h b/src/utils/fluid_threading.h
 new file mode 100644
-index 00000000..0e23cc69
+index 00000000..5ff498e7
 --- /dev/null
 +++ b/src/utils/fluid_threading.h
 @@ -0,0 +1,65 @@
